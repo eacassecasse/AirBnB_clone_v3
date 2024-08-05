@@ -74,12 +74,14 @@ class FileStorage:
         Returns the object based on the class name and its ID, or
         None if not found
         """
+        import models
+
         if cls not in classes.values():
             return None
 
         cls_objs = models.storage.all(cls)
-        for v in cls_objs.values():
-            if v.id == id:
+        for value in cls_objs.values():
+            if value.id == id:
                 return value
 
         return None
