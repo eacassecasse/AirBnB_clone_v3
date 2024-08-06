@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """ This module handles the Restful Actions for the Cities """
 from models.city import City
+from models.state import State
 from models import storage
 from api.v1.views import app_views
 from flask import abort, jsonify, make_response, request
@@ -15,12 +16,10 @@ def list_cities(state_id):
     if not state:
         abort(404)
 
-    cities = storage.all(City)
-    cities_list = []
-    for city in cities:
-        if city.state_id == state.id:
-            cities_list.append(city.to_dict())
-    return jsonify(cities_list)
+    cities = [city.to_dict() for city in storage.all(City).values()
+        if city.state_id == state.id]
+    
+    return jsonify(cities)
 
 
 @app_views.route('/cities/<city_id>', methods=['GET'], strict_slashes=False)
@@ -35,7 +34,7 @@ def find_city(city_id):
 
 @app_views.route('/cities/<city_id>', methods=['DELETE'],
                  strict_slashes=False)
-def delete_one(city_id):
+def delete_city(city_id):
     """
     Removes a city from the storage based on the ID
     """
@@ -50,7 +49,7 @@ def delete_one(city_id):
 
 
 @app_views.route('/states/<state_id>/cities', methods=['POST'], strict_slashes=False)
-def create(state_id):
+def create_city(state_id):
     """
     Creates a new city on a state into the storage
     """
@@ -73,7 +72,7 @@ def create(state_id):
 
 
 @app_views.route('/cities/<city_id>', methods=['PUT'], strict_slashes=False)
-def update(city_id):
+def update_city(city_id):
     """
     Updates a city into the storage
     """
@@ -92,4 +91,4 @@ def update(city_id):
         if key not in ignorable:
             setattr(city, key, value)
     storage.save()
-    return make_response(jsonify(state.to_dict()), 200)
+    return make_response(jsonify(city.to_dict()), 200)

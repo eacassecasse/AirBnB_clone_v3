@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 """ This module handles the Restful Actions for the Places """
+from models.user import User
+from models.city import City
 from models.place import Place
 from models import storage
 from api.v1.views import app_views
@@ -15,12 +17,10 @@ def list_places(city_id):
     if not city:
         abort(404)
 
-    places = storage.all(Place)
-    places_list = []
-    for place in places:
-        if place.city_id == city.id:
-            places_list.append(place.to_dict())
-    return jsonify(places_list)
+    places = [place.to_dict() for place in storage.all(Place).values()
+        if place.city_id == city.id]
+    
+    return jsonify(places)
 
 
 @app_views.route('/places/<place_id>', methods=['GET'], strict_slashes=False)
@@ -35,7 +35,7 @@ def find_place(place_id):
 
 @app_views.route('/places/<place_id>', methods=['DELETE'],
                  strict_slashes=False)
-def delete_one(place_id):
+def delete_place(place_id):
     """
     Removes a place from the storage based on the ID
     """
@@ -50,7 +50,7 @@ def delete_one(place_id):
 
 
 @app_views.route('/cities/<city_id>/places', methods=['POST'], strict_slashes=False)
-def create(city_id):
+def create_place(city_id):
     """
     Creates a new place on a city into the storage
     """
@@ -82,7 +82,7 @@ def create(city_id):
 
 
 @app_views.route('/places/<place_id>', methods=['PUT'], strict_slashes=False)
-def update(place_id):
+def update_place(place_id):
     """
     Updates a place into the storage
     """
@@ -101,4 +101,4 @@ def update(place_id):
         if key not in ignorable:
             setattr(place, key, value)
     storage.save()
-    return make_response(jsonify(city.to_dict()), 200)
+    return make_response(jsonify(place.to_dict()), 200)

@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 """ This module handles the Restful Actions for the Reviews """
+from models.user import User
+from models.place import Place
 from models.review import Review
 from models import storage
 from api.v1.views import app_views
@@ -15,12 +17,10 @@ def list_reviews(place_id):
     if not place:
         abort(404)
 
-    reviews = storage.all(Review)
-    reviews_list = []
-    for review in reviews:
-        if review.place_id == place.id:
-            reviews_list.append(review.to_dict())
-    return jsonify(reviews_list)
+    reviews = [review.to_dict() for review in storage.all(Review).values()
+        if review.place_id == place.id]
+    
+    return jsonify(reviews)
 
 
 @app_views.route('/reviews/<review_id>', methods=['GET'], strict_slashes=False)
@@ -35,7 +35,7 @@ def find_review(review_id):
 
 @app_views.route('/reviews/<review_id>', methods=['DELETE'],
                  strict_slashes=False)
-def delete_one(review_id):
+def delete_review(review_id):
     """
     Removes a review from the storage based on the ID
     """
@@ -50,7 +50,7 @@ def delete_one(review_id):
 
 
 @app_views.route('/places/<place_id>/reviews', methods=['POST'], strict_slashes=False)
-def create(place_id):
+def create_review(place_id):
     """
     Creates a new review on a place into the storage
     """
@@ -83,7 +83,7 @@ def create(place_id):
 
 
 @app_views.route('/reviews/<review_id>', methods=['PUT'], strict_slashes=False)
-def update(review_id):
+def update_review(review_id):
     """
     Updates a review into the storage
     """
@@ -102,4 +102,4 @@ def update(review_id):
         if key not in ignorable:
             setattr(review, key, value)
     storage.save()
-    return make_response(jsonify(place.to_dict()), 200)
+    return make_response(jsonify(review.to_dict()), 200)

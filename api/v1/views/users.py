@@ -78,7 +78,7 @@ def update_user(user_id):
     if not request.get_json():
         abort(400, description="Not a JSON")
 
-    ignorable = ['id', 'created_at', 'updated_at']
+    ignorable = ['id', 'email', 'created_at', 'updated_at']
 
     req_body = request.get_json()
     for key, value in req_body.items():
