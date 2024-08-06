@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """ This module handles the Restful Actions for the Places """
 from models.user import User
+from models.state import State
 from models.city import City
 from models.place import Place
 from models import storage
@@ -102,3 +103,49 @@ def update_place(place_id):
             setattr(place, key, value)
     storage.save()
     return make_response(jsonify(place.to_dict()), 200)
+
+
+@app_views.route('/places_search', methods=['POST'], strict_slashes=False)
+def places_search():
+    """
+    Retrieves places from the storage based on request body
+    """
+    data = request.get_json()
+
+    if data is None:
+        abort(400, description="Not a JSON")
+
+    states = data.get('states', [])
+    cities = data.get('cities', [])
+    amenities = data.get('amenities', [])
+
+    if not all(isinstance(val, list) for val in [states, cities, amenities]):
+        abort(400, description="All filters must be lists")
+    
+    places = storage.all(Place).values()
+    
+    if not states and not cities and not amenities:
+        return jsonify([place.to_dict() for place in places.values()])
+
+    if states or cities:
+        city_ids = set(cities)
+        for state_id in states:
+            state = storage.get(State, state_id)
+            if state:
+                city_ids.update(city.id for city in state.cities)
+
+        filtered_places = [place for place in places if place.city_id in city_ids]
+    else:
+        filtered_places = list(places)
+
+    if amenities:
+        filtered_by_amenities = []
+
+        for place in filtered_places:
+            p_amenities_ids = {amenity.id for amenity in place.amenities}
+            if all(a_id in p_amenities_ids for a_id in amenities):
+                filtered_by_amenities.append(place)
+        filtered_places = filtered_by_amenities
+
+    print(" CURRENT SIZE {}".format(len(filtered_places)))
+    return jsonify([place.to_dict() for place in filtered_places])
