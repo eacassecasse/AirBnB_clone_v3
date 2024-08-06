@@ -100,37 +100,41 @@ class TestDBStorageCountGet(unittest.TestCase):
         else:
             from models.engine.file_storage import FileStorage
             cls.storage = FileStorage()
-    
+
     def setUp(self):
-        """
-        Creating storage and objects 
-        """
-        self.state1 = State(id="c1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890", name="Nebraska")
-        self.state2 = State(id="4f3a2b1c-0d9e-8f7g-6h5i-4j3k2l1m0n9o", name="Georgia")
+        """ Creating storage and objects """
+        self.state1 = State(
+                id="c1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890", name="Nebraska")
+        self.state2 = State(
+                id="4f3a2b1c-0d9e-8f7g-6h5i-4j3k2l1m0n9o", name="Georgia")
         models.storage.new(self.state1)
         models.storage.new(self.state2)
         models.storage.save()
 
     def test_get_existing_object(self):
         """ Testing if the get method gets an existing object """
-        result = models.storage.get(State, "c1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890")
+        result = models.storage.get(
+                State, "c1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890")
         self.assertEqual(result, self.state1)
 
     def test_get_non_existing_object(self):
         """ Testing if the get method gets an non-existing object """
 
-        result = models.storage.get(State, "f4e3d2c1-b5a6-7980-c1d2-e3f4g5h6i7j8")
+        result = models.storage.get(
+                State, "f4e3d2c1-b5a6-7980-c1d2-e3f4g5h6i7j8")
         self.assertIsNone(result)
 
     def test_get_with_invalid_class(self):
         """ Testing if the get method gets with an invalid class """
-        result = models.storage.get("InvalidClass", "c1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890")
+        result = models.storage.get(
+                "InvalidClass", "c1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890")
         self.assertIsNone(result)
 
     def test_get_with_valid_class_no_objects(self):
-        """ Testing if the get method gets with a valid class but, 
+        """ Testing if the get method gets with a valid class but,
         non-existing object """
-        result = models.storage.get(State, "f4e3d2c1-b5a6-7980-c1d2-e3f4g5h6i7j8")
+        result = models.storage.get(
+                State, "f4e3d2c1-b5a6-7980-c1d2-e3f4g5h6i7j8")
         self.assertIsNone(result)
 
     def test_count_all_objects(self):
@@ -159,6 +163,6 @@ class TestDBStorageCountGet(unittest.TestCase):
         models.storage.delete(self.state2)
         models.storage.save()
 
+
 if __name__ == '__main__':
     unittest.main()
-
